@@ -1,0 +1,27 @@
+{
+    "deno.enable": true,
+    "deno.lint": true,
+    "deno.unstable": true,
+    "deno.suggest.imports.hosts": {
+        "https://deno.land": false,
+        "http://deno.land": true
+    },
+    "deno.config": "deno.json",
+    "deno.importMap": "import_map.json",
+    "emmet.includeLanguages": {
+        "ejs": "html",
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "denoland.vscode-deno",
+        "editor.formatOnSave": true
+    },
+    "[json]": {
+        "editor.defaultFormatter": "denoland.vscode-deno",
+        "editor.formatOnSave": true
+    },
+    "[html]": {
+        "editor.defaultFormatter": "j69.ejs-beautify",
+        "editor.formatOnSave": true
+    },
+    "markdown.preview.breaks": true,
+}

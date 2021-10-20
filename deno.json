@@ -1,0 +1,12 @@
+{
+    "fmt": {
+        "options": {
+            "indentWidth": 4,
+            "singleQuote": true,
+            "useTabs": false
+        },
+        "files": {
+            "include": ["./"]
+        }
+    }
+}
