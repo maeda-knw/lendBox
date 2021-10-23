@@ -10,8 +10,17 @@
 	deno 1.15.2
 * editor
 	vscode
+* DB
+	mongodb-community
 
 ## usage
+mongodbの起動。
+```sh
+$ cd mongodb/
+$ mongod --config mongodb.config
+```
+初回起動の場合は`mongodb/initialize.txt`と`mongodb/masterdata.txt`に従って初期化すること。
+
 アプリ起動
 ```sh
 $ sh run.sh

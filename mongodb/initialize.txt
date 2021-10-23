@@ -1,0 +1,22 @@
+// 全データベースの管理者
+use admin;
+db.createUser({
+	user: "administrator",
+	pwd: "kdhaskae",
+	roles: [
+		{ role: "userAdminAnyDatabase", db: "admin" },
+		{ role: "readWriteAnyDatabase", db: "admin" }
+	]
+});
+
+// lendBoxのユーザと、使うcollectionの設定
+use lendBox;
+db.createUser({
+	user: "rwer",
+	pwd:"jsdajbki",
+	roles:[{role: "readWrite", db:"lendBox"}]
+});
+
+db.createCollection("Ticket");
+db.createCollection("Item");
+
