@@ -19,7 +19,7 @@ mongodbの起動。
 $ cd mongodb/
 $ mongod --config mongodb.config
 ```
-初回起動の場合は`mongodb/initialize.txt`と`mongodb/masterdata.txt`に従って初期化すること。
+初回起動の場合は`mongodb/initialize.txt`と`mongodb/itemdata.txt`に従って初期化すること。
 
 アプリ起動
 ```sh
