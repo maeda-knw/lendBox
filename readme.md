@@ -5,11 +5,11 @@
 トータルの物品数を記録しておき、貸し出しチケットの発行を通じて物品の残量などを管理する。
 
 ## 開発環境
-* runtime
+* runtime\
     deno v1.15.2
-* editor
+* editor\
     vscode
-* DB
+* DB\
     mongodb-community v5.0.3
 
 ## MongoDB
