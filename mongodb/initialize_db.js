@@ -1,5 +1,15 @@
+db = db.getSiblingDB("admin");
+db.auth("root", "1234");
 
-// Item Collection
+db = db.getSiblingDB("lendBox");
+db.dropDatabase();
+
+// collection
+db = db.getSiblingDB("lendBox");
+db.createCollection("Ticket");
+db.createCollection("Item");
+
+// Item data(initial)
 db.Item.insert({itemid: 1, name:"IchigoJam", stock:0});
 db.Item.insert({itemid: 2, name:"MixJuice", stock:0});
 db.Item.insert({itemid: 3, name:"M01 LED", stock:0});
@@ -15,5 +25,3 @@ db.Item.insert({itemid: 9, name:"DPC", stock:0});
 db.Item.insert({itemid: 10, name:"カムロボ", stock:0});
 db.Item.insert({itemid: 11, name:"radish", stock:0});
 db.Item.insert({itemid: 12, name:"radish typeD", stock:0});
-
-

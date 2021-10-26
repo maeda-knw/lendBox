@@ -3,6 +3,7 @@
         "path/": "https://deno.land/std@0.111.0/path/",
         "oak/": "https://deno.land/x/oak@v6.2.0/",
         "view_engine/": "https://deno.land/x/view_engine@v1.4.5/",
-        "dotenv/": "https://deno.land/x/dotenv@v3.0.0/"
+        "dotenv/": "https://deno.land/x/dotenv@v3.0.0/",
+        "mongo/": "https://deno.land/x/mongo@v0.28.0/"
     }
 }
