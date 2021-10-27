@@ -1,4 +1,4 @@
-import { Database, MongoClient } from 'mongo/mod.ts';
+import { ConnectOptions, Database, MongoClient } from 'mongo/mod.ts';
 
 interface IItem {
     itemid: Number;
@@ -8,36 +8,73 @@ interface IItem {
 
 class LendBox {
     _db: Database | null;
+    _client: MongoClient;
 
     constructor() {
-        const usr = Deno.env.get('MONGO_USR');
-        const port = Deno.env.get('MONGO_PORT');
-        const host = Deno.env.get('MONGO_HOST');
-        const pwd = Deno.env.get('MONGO_PWD');
-        const dbname = Deno.env.get('MONGO_DB');
-        const strConnect = `mongodb://${usr}:${pwd}@${host}:${port}/${dbname}`;
-
-        const client = new MongoClient();
-
+        this._client = new MongoClient();
         this._db = null;
-        client.connect(strConnect)
-            .then(() => {
-                this._db = client.database(dbname);
-            })
-            .catch((err) => {
-                console.error(err);
-            });
     }
 
-    async getAllItem(): Promise<IItem[] | null> {
-        if (this._db === null) {
-            return new Promise((resolve) => {
-                resolve(null);
+    async db(): Promise<Database> {
+        if (this._db) {
+            const db = this._db;
+            return new Promise<Database>((resolve) => {
+                resolve(db);
             });
         }
 
-        const collectionItem = this._db.collection<IItem>('Item');
-        return collectionItem.find().toArray();
+        const usr = Deno.env.get('MONGO_USR') ?? 'user';
+        const port = Deno.env.get('MONGO_PORT') ?? '27017';
+        const host = Deno.env.get('MONGO_HOST') ?? '127.0.0.1';
+        const pwd = Deno.env.get('MONGO_PWD') ?? '1234';
+        const dbname = Deno.env.get('MONGO_DB') ?? 'lendBox';
+        const option: ConnectOptions = {
+            db: dbname,
+            servers: [{
+                host: host,
+                port: Number(port),
+            }],
+            credential: {
+                username: usr,
+                password: pwd,
+                db: dbname,
+                mechanism: 'SCRAM-SHA-1',
+            },
+        };
+
+        const promise = new Promise<Database>((resolve, reject) => {
+            this._client.connect(option)
+                .then((db) => {
+                    this._db = db;
+                    resolve(this._db);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+
+        return promise;
+    }
+
+    async getAllItem(): Promise<IItem[] | null> {
+        const db = await this.db();
+        const arr = await db.collection<IItem>('Item').find().toArray();
+        const item = arr.map((elem) => {
+            let item: IItem = {
+                itemid: elem.itemid,
+                name: elem.name,
+                stock: elem.stock,
+            };
+            return item;
+        });
+
+        return new Promise<IItem[]>((resolve) => {
+            resolve(item);
+        });
+    }
+
+    close(): void {
+        this._client.close();
     }
 }
 
