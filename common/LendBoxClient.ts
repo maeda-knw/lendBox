@@ -11,7 +11,7 @@ interface IItem {
     stock: Number;
 }
 
-interface ITicket {
+export interface ITicket {
     title: String;
     registry: Date;
     send: Date;
@@ -20,7 +20,7 @@ interface ITicket {
     state: status;
 }
 
-const enum status {
+export const enum status {
     prepare = 1,
     ready = 2,
     lending = 3,
@@ -115,9 +115,12 @@ class LendBox {
             try {
                 const database = await this.connect();
                 const collection = await this.getTicketCollection(database);
-                resolve(collection.insertOne(ticket));
+                const id = await collection.insertOne(ticket);
+                resolve(id);
             } catch (err) {
                 reject(err);
+            } finally {
+                this.close();
             }
         });
     }
