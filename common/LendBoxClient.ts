@@ -1,4 +1,5 @@
 import {
+    Bson,
     Collection,
     ConnectOptions,
     Database,
@@ -12,6 +13,7 @@ interface IItem {
 }
 
 export interface ITicket {
+    _id?: Bson.ObjectId;
     title: String;
     registry: Date;
     send: Date;
@@ -110,7 +112,7 @@ class LendBox {
         });
     }
 
-    async insertTicket(ticket: ITicket): Promise<unknown> {
+    async insertTicket(ticket: ITicket): Promise<Bson.ObjectId> {
         return new Promise(async (resolve, reject) => {
             try {
                 const database = await this.connect();
@@ -130,17 +132,7 @@ class LendBox {
             try {
                 const database = await this.connect();
                 const collection = await this.getTicketCollection(database);
-                const arrRawTicket = await collection.find(filter).toArray();
-                const arrTicket = arrRawTicket.map((elem) => {
-                    return {
-                        title: elem.title,
-                        registry: elem.registry,
-                        items: elem.items,
-                        send: elem.send,
-                        receive: elem.receive,
-                        state: elem.state,
-                    };
-                });
+                const arrTicket = await collection.find(filter).toArray();
                 resolve(arrTicket);
             } catch (err) {
                 reject(err);

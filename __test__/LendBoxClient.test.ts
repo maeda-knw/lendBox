@@ -5,7 +5,7 @@ import {
 } from 'testing/asserts.ts';
 import { ITicket, LendBoxClient, status } from '../common/LendBoxClient.ts';
 
-Deno.test('db connection', async () => {
+Deno.test('db connection error', async () => {
     await assertThrowsAsync(
         async () => {
             try {
@@ -38,7 +38,7 @@ Deno.test('getAllItem', async () => {
         { name: 'radish typeD', stock: 0 },
     ];
     const arrItem = await LendBoxClient.getAllItem();
-    assertEquals(arrItem, arrData);
+    assertArrayIncludes(arrItem, arrData);
 });
 
 Deno.test('ticket', async (tContext) => {
@@ -59,8 +59,8 @@ Deno.test('ticket', async (tContext) => {
             ],
             state: status.prepare,
         };
-        const expect_prepare = { ...ticket_prepare };
-        await LendBoxClient.insertTicket(ticket_prepare); // ここで引数のオブジェクトを書き換えている。
+        const id_prepare = await LendBoxClient.insertTicket(ticket_prepare); // ここで引数のオブジェクトを書き換えている。
+        assertEquals(id_prepare, ticket_prepare._id, 'prepare id');
 
         const ticket_completion: ITicket = {
             title: 'test_completion',
@@ -73,22 +73,31 @@ Deno.test('ticket', async (tContext) => {
             ],
             state: status.completion,
         };
-        const expect_completion = { ...ticket_completion };
-        await LendBoxClient.insertTicket(ticket_completion);
+        const id_completion = await LendBoxClient.insertTicket(
+            ticket_completion,
+        );
+        assertEquals(id_completion, ticket_completion._id, 'completion id');
 
         const actual_tickets = await LendBoxClient.getTicket();
-        assertEquals(1, 1);
         assertArrayIncludes(actual_tickets, [
-            expect_prepare,
-            expect_completion,
-        ]);
+            ticket_prepare,
+            ticket_completion,
+        ], 'all tickets');
 
         const actual_tickets_prepare = await LendBoxClient
             .getNonCompletionTicket();
-        assertArrayIncludes(actual_tickets_prepare, [expect_prepare]);
+        assertArrayIncludes(
+            actual_tickets_prepare,
+            [ticket_prepare],
+            'no completion tickets',
+        );
 
         const actual_tickets_completion = await LendBoxClient
             .getCompletionTicket();
-        assertArrayIncludes(actual_tickets_completion, [expect_completion]);
+        assertArrayIncludes(
+            actual_tickets_completion,
+            [ticket_completion],
+            'completion tickets',
+        );
     });
 });
