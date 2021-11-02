@@ -1,28 +1,24 @@
-import {
-    assertEquals,
-    assertThrowsAsync,
-} from 'https://deno.land/std/testing/asserts.ts';
+import { assertEquals, assertThrowsAsync } from 'testing/asserts.ts';
 import { LendBoxClient } from '../common/LendBoxClient.ts';
 
-// Deno.test('db connection', async () => {
-//     Deno.env.set('MONGO_PWD', '1');
-//     await assertThrowsAsync(
-//         async () => {
-//             try {
-//                 await LendBoxClient.connect();
-//             } catch (err) {
-//                 throw err;
-//             }
-//         },
-//         undefined,
-//         'Connection failed',
-//     );
-
-//     Deno.env.set('MONGO_PWD', '1234');
-// });
+Deno.test('db connection', async () => {
+    await assertThrowsAsync(
+        async () => {
+            try {
+                Deno.env.set('MONGO_HOST', '127.0.0.2');
+                await LendBoxClient.getAllItem();
+            } catch (err) {
+                throw err;
+            } finally {
+                Deno.env.set('MONGO_HOST', '127.0.0.1');
+            }
+        },
+        undefined,
+        'Connection failed',
+    );
+});
 
 Deno.test('getAllItem', async () => {
-    await LendBoxClient.connect();
     const arrData = [
         { name: 'IchigoJam', stock: 0 },
         { name: 'MixJuice', stock: 0 },
@@ -39,15 +35,11 @@ Deno.test('getAllItem', async () => {
     ];
     const arrItem = await LendBoxClient.getAllItem();
     assertEquals(JSON.stringify(arrItem), JSON.stringify(arrData));
-    LendBoxClient.close();
 });
 
 Deno.test('ticket', async (tContext) => {
-    await LendBoxClient.connect();
     await tContext.step('check nothing ticket', async () => {
         const arrTicket = await LendBoxClient.getTicket();
         assertEquals(arrTicket.length, 0);
     });
-
-    LendBoxClient.close();
 });

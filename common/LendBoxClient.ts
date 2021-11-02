@@ -28,15 +28,13 @@ const enum status {
 }
 
 class LendBox {
-    _database: Database | null;
-    _client: MongoClient;
+    private _client: MongoClient;
 
     constructor() {
         this._client = new MongoClient();
-        this._database = null;
     }
 
-    async connect(): Promise<Database> {
+    private async connect(): Promise<Database> {
         const usr = Deno.env.get('MONGO_USR') ?? 'user';
         const port = Deno.env.get('MONGO_PORT') ?? '27017';
         const host = Deno.env.get('MONGO_HOST') ?? '127.0.0.1';
@@ -59,28 +57,20 @@ class LendBox {
         return new Promise<Database>((resolve, reject) => {
             this._client.connect(option)
                 .then((database) => {
-                    this._database = database;
-                    resolve(this._database);
+                    resolve(database);
                 })
                 .catch((err) => {
+                    console.log('connection error');
                     this._client.close();
                     reject(err);
                 });
         });
     }
 
-    database(): Database {
-        if (this._database) {
-            return this._database;
-        } else {
-            throw new Error('no connection');
-        }
-    }
-
-    async getItemCollection(): Promise<Collection<IItem>> {
+    async getItemCollection(database: Database): Promise<Collection<IItem>> {
         return new Promise(async (resolve, reject) => {
             try {
-                resolve(this.database().collection<IItem>('Item'));
+                resolve(database.collection<IItem>('Item'));
             } catch (err) {
                 reject(err);
             }
@@ -90,7 +80,8 @@ class LendBox {
     async getAllItem(): Promise<IItem[]> {
         return new Promise<IItem[]>(async (resolve, reject) => {
             try {
-                const collection = await this.getItemCollection();
+                const database = await this.connect();
+                const collection = await this.getItemCollection(database);
                 const arrRawItem = await collection.find().toArray();
                 const arrItem = arrRawItem.map((elem) => {
                     return {
@@ -101,14 +92,18 @@ class LendBox {
                 resolve(arrItem);
             } catch (err) {
                 reject(err);
+            } finally {
+                this.close();
             }
         });
     }
 
-    async getTicketCollection(): Promise<Collection<ITicket>> {
+    async getTicketCollection(
+        database: Database,
+    ): Promise<Collection<ITicket>> {
         return new Promise<Collection<ITicket>>(async (resolve, reject) => {
             try {
-                resolve(this.database().collection<ITicket>('Ticket'));
+                resolve(database.collection<ITicket>('Ticket'));
             } catch (err) {
                 reject(err);
             }
@@ -118,7 +113,8 @@ class LendBox {
     async insertTicket(ticket: ITicket): Promise<unknown> {
         return new Promise(async (resolve, reject) => {
             try {
-                const collection = await this.getTicketCollection();
+                const database = await this.connect();
+                const collection = await this.getTicketCollection(database);
                 resolve(collection.insertOne(ticket));
             } catch (err) {
                 reject(err);
@@ -129,7 +125,8 @@ class LendBox {
     async getTicket(filter?: Filter<ITicket>): Promise<ITicket[]> {
         return new Promise<ITicket[]>(async (resolve, reject) => {
             try {
-                const collection = await this.getTicketCollection();
+                const database = await this.connect();
+                const collection = await this.getTicketCollection(database);
                 const arrRawTicket = await collection.find(filter).toArray();
                 const arrTicket = arrRawTicket.map((elem) => {
                     return {
@@ -144,6 +141,8 @@ class LendBox {
                 resolve(arrTicket);
             } catch (err) {
                 reject(err);
+            } finally {
+                this.close();
             }
         });
     }
@@ -156,9 +155,8 @@ class LendBox {
         return this.getTicket({ state: { $ne: status.completion } });
     }
 
-    close(): void {
+    private close(): void {
         this._client.close();
-        this._database = null;
     }
 }
 
