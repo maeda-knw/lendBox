@@ -9,6 +9,7 @@ import {
     LendBoxClient,
     status,
 } from '../common/LendBoxClient.ts';
+import { Bson } from 'mongo/mod.ts';
 
 Deno.test('db connection error', async () => {
     await assertThrowsAsync(
@@ -147,5 +148,17 @@ Deno.test('ticket', async (tContext) => {
             ...newData,
         };
         assertArrayIncludes(ticket_updated, [expected_ticket], 'update data');
+    });
+
+    await tContext.step('update no ticket', async () => {
+        assertThrowsAsync(
+            async () => {
+                await LendBoxClient.updateTicket(
+                    Bson.ObjectId.createFromTime(1),
+                );
+            },
+            Error,
+            'find no ticket',
+        );
     });
 });
