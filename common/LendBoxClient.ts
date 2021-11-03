@@ -12,13 +12,18 @@ interface IItem {
     stock: Number;
 }
 
+export interface ITicketItem {
+    name: String;
+    amount: Number;
+}
+
 export interface ITicket {
     _id?: Bson.ObjectId;
-    title: String;
     registry: Date;
+    title: String;
     send: Date;
     receive: Date;
-    items: { name: String; amount: Number }[];
+    items: ITicketItem[];
     state: status;
 }
 
@@ -69,7 +74,13 @@ class LendBox {
         });
     }
 
-    async getItemCollection(database: Database): Promise<Collection<IItem>> {
+    private close(): void {
+        this._client.close();
+    }
+
+    private async getItemCollection(
+        database: Database,
+    ): Promise<Collection<IItem>> {
         return new Promise(async (resolve, reject) => {
             try {
                 resolve(database.collection<IItem>('Item'));
@@ -100,7 +111,7 @@ class LendBox {
         });
     }
 
-    async getTicketCollection(
+    private async getTicketCollection(
         database: Database,
     ): Promise<Collection<ITicket>> {
         return new Promise<Collection<ITicket>>(async (resolve, reject) => {
@@ -133,6 +144,7 @@ class LendBox {
                 const database = await this.connect();
                 const collection = await this.getTicketCollection(database);
                 const arrTicket = await collection.find(filter).toArray();
+                // console.log(arrTicket[0]._id?.toHexString());
                 resolve(arrTicket);
             } catch (err) {
                 reject(err);
@@ -150,8 +162,43 @@ class LendBox {
         return this.getTicket({ state: { $ne: status.completion } });
     }
 
-    private close(): void {
-        this._client.close();
+    async updateTicket(
+        id: Bson.ObjectId,
+        title?: String,
+        send?: Date,
+        receive?: Date,
+        items?: ITicketItem[],
+        state?: status,
+    ) {
+        return new Promise<Number>(async (resolve, reject) => {
+            try {
+                const database = await this.connect();
+                const collection = await this.getTicketCollection(database);
+                const arrTicket = await collection.find({ _id: id }).toArray();
+                if (arrTicket.length === 0) {
+                    console.log('no ticket!');
+                    reject(new Error('find no ticket'));
+                    return;
+                }
+
+                let updating = {};
+                if (title) Object.assign(updating, { title: title });
+                if (send) Object.assign(updating, { send: send });
+                if (receive) Object.assign(updating, { receive: receive });
+                if (items) Object.assign(updating, { items: items });
+                if (state) Object.assign(updating, { state: state });
+
+                const updateInfo = await collection.updateOne(
+                    { _id: id },
+                    { $set: updating },
+                );
+                resolve(updateInfo.modifiedCount);
+            } catch (err) {
+                reject(err);
+            } finally {
+                this.close();
+            }
+        });
     }
 }
 
