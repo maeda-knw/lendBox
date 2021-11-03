@@ -1,5 +1,6 @@
 {
     "imports": {
+        "testing/": "https://deno.land/std@0.109.0/testing/",
         "path/": "https://deno.land/std@0.111.0/path/",
         "oak/": "https://deno.land/x/oak@v6.2.0/",
         "view_engine/": "https://deno.land/x/view_engine@v1.4.5/",
