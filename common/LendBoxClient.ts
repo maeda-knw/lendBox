@@ -32,6 +32,7 @@ export const enum status {
     ready = 2,
     lending = 3,
     completion = 4,
+    deleted = 5,
 }
 
 class LendBox {
@@ -144,7 +145,6 @@ class LendBox {
                 const database = await this.connect();
                 const collection = await this.getTicketCollection(database);
                 const arrTicket = await collection.find(filter).toArray();
-                // console.log(arrTicket[0]._id?.toHexString());
                 resolve(arrTicket);
             } catch (err) {
                 reject(err);
@@ -159,7 +159,16 @@ class LendBox {
     }
 
     async getNonCompletionTicket(): Promise<ITicket[]> {
-        return this.getTicket({ state: { $ne: status.completion } });
+        return this.getTicket({
+            $and: [
+                { state: { $ne: status.completion } },
+                { state: { $ne: status.deleted } },
+            ],
+        });
+    }
+
+    async getDeletedTicket(): Promise<ITicket[]> {
+        return this.getTicket({ state: status.deleted });
     }
 
     async updateTicket(
@@ -176,7 +185,6 @@ class LendBox {
                 const collection = await this.getTicketCollection(database);
                 const arrTicket = await collection.find({ _id: id }).toArray();
                 if (arrTicket.length === 0) {
-                    console.log('no ticket!');
                     reject(new Error('find no ticket'));
                     return;
                 }

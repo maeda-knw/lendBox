@@ -48,63 +48,76 @@ Deno.test('getAllItem', async () => {
 });
 
 Deno.test('ticket', async (tContext) => {
-    await tContext.step('check nothing ticket', async () => {
+    // ticket
+    const ticket_prepare: ITicket = {
+        title: 'test_prepare',
+        registry: new Date('2020/10/10'),
+        send: new Date('2020/10/11'),
+        receive: new Date('2020/10/12'),
+        items: [
+            { name: 'prepare_1', amount: 1 },
+            { name: 'prepare_2', amount: 2 },
+        ],
+        state: status.prepare,
+    };
+    const ticket_completion: ITicket = {
+        title: 'test_completion',
+        registry: new Date('2020/10/10'),
+        send: new Date('2020/10/11'),
+        receive: new Date('2020/10/12'),
+        items: [
+            { name: 'completion_1', amount: 1 },
+            { name: 'completion_2', amount: 2 },
+        ],
+        state: status.completion,
+    };
+    const ticket_deleted: ITicket = {
+        title: 'test_deleted',
+        registry: new Date('2020/10/10'),
+        send: new Date('2020/10/11'),
+        receive: new Date('2020/10/12'),
+        items: [
+            { name: 'deleted_1', amount: 1 },
+            { name: 'deleted_2', amount: 2 },
+        ],
+        state: status.deleted,
+    };
+
+    await tContext.step('get no ticket', async () => {
         const arrTicket = await LendBoxClient.getTicket();
         assertEquals(arrTicket.length, 0);
     });
 
     await tContext.step('insert ticket', async () => {
-        const ticket_prepare: ITicket = {
-            title: 'test_prepare',
-            registry: new Date('2020/10/10'),
-            send: new Date('2020/10/11'),
-            receive: new Date('2020/10/12'),
-            items: [
-                { name: 'prepare_1', amount: 1 },
-                { name: 'prepare_2', amount: 2 },
-            ],
-            state: status.prepare,
-        };
         const id_prepare = await LendBoxClient.insertTicket(ticket_prepare); // ここで引数のオブジェクトを書き換えている。
+        await LendBoxClient.insertTicket(ticket_completion);
+        await LendBoxClient.insertTicket(ticket_deleted);
         assertEquals(id_prepare, ticket_prepare._id, 'prepare id');
-
-        const ticket_completion: ITicket = {
-            title: 'test_completion',
-            registry: new Date('2020/10/10'),
-            send: new Date('2020/10/11'),
-            receive: new Date('2020/10/12'),
-            items: [
-                { name: 'completion_1', amount: 1 },
-                { name: 'completion_2', amount: 2 },
-            ],
-            state: status.completion,
-        };
-        const id_completion = await LendBoxClient.insertTicket(
-            ticket_completion,
-        );
-        assertEquals(id_completion, ticket_completion._id, 'completion id');
 
         const actual_tickets = await LendBoxClient.getTicket();
         assertArrayIncludes(actual_tickets, [
             ticket_prepare,
             ticket_completion,
         ], 'all tickets');
+        assertEquals(actual_tickets.length, 3);
+    });
 
-        const actual_tickets_prepare = await LendBoxClient
-            .getNonCompletionTicket();
-        assertArrayIncludes(
-            actual_tickets_prepare,
-            [ticket_prepare],
-            'no completion tickets',
-        );
+    await tContext.step('get completion ticket', async () => {
+        const actual = await LendBoxClient.getCompletionTicket();
+        assertArrayIncludes(actual, [ticket_completion]);
+        assertEquals(actual.length, 1);
+    });
 
-        const actual_tickets_completion = await LendBoxClient
-            .getCompletionTicket();
-        assertArrayIncludes(
-            actual_tickets_completion,
-            [ticket_completion],
-            'completion tickets',
-        );
+    await tContext.step('get no completion ticket', async () => {
+        const actual = await LendBoxClient.getNonCompletionTicket();
+        assertArrayIncludes(actual, [ticket_prepare]);
+        assertEquals(actual.length, 1);
+    });
+
+    await tContext.step('get deleted ticket', async () => {
+        const actual = await LendBoxClient.getDeletedTicket();
+        assertArrayIncludes(actual, [ticket_deleted]);
+        assertEquals(actual.length, 1);
     });
 
     await tContext.step('update ticket success', async () => {
