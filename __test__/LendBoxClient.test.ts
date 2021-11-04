@@ -164,7 +164,7 @@ Deno.test('ticket', async (tContext) => {
     });
 
     await tContext.step('update no ticket', async () => {
-        assertThrowsAsync(
+        await assertThrowsAsync(
             async () => {
                 await LendBoxClient.updateTicket(
                     Bson.ObjectId.createFromTime(1),
