@@ -1,0 +1,37 @@
+## アドレス
+
+/
+ticket/
+    add/
+    edit/
+    closed/
+    deleted/
+item/
+    edit/
+
+
+## アドレスと機能の対応
+
+* /
+    各ページへのハブ
+    未完了のチケットの一覧。
+    ステータスの更新だけならここでやる。
+    貸し出し可能量の表示。
+
+* ticket/edit/id
+    チケットの編集。貸し出しアイテムの種類・数、チケットのステータスも。
+
+* ticket/add
+    新規チケットの発行
+
+* ticket/closed
+    close済のチケット一覧
+
+* ticket/deleted
+    delete済のチケット一覧
+
+* item/
+    アイテムの種類と総数を全て表示する。
+
+* item/edit/
+    アイテムの編集。
