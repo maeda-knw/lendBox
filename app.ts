@@ -4,7 +4,7 @@ import { join } from 'path/mod.ts';
 
 // routes
 import { routerIndex } from './routes/index.ts';
-import { routerDepository } from './routes/depository.ts';
+import { routerItem } from './routes/item.ts';
 
 const app = new Application();
 
@@ -28,8 +28,8 @@ app.use(async (context, next) => {
 // routing
 app.use(routerIndex.allowedMethods());
 app.use(routerIndex.routes());
-app.use(routerDepository.allowedMethods());
-app.use(routerDepository.routes());
+app.use(routerItem.allowedMethods());
+app.use(routerItem.routes());
 
 // 500 error
 app.use((context, next) => {
