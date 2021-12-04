@@ -1,17 +1,12 @@
 import 'dotenv/load.ts';
 import { Application, send } from 'oak/mod.ts';
-import { adapterFactory, engineFactory, viewEngine } from 'view_engine/mod.ts';
 import { join } from 'path/mod.ts';
 
 // routes
 import { routerIndex } from './routes/index.ts';
 import { routerDepository } from './routes/depository.ts';
 
-const ejsEngine = engineFactory.getEjsEngine();
-const oakAdapter = adapterFactory.getOakAdapter();
 const app = new Application();
-
-app.use(viewEngine(oakAdapter, ejsEngine));
 
 // static
 app.use(async (context, next) => {
